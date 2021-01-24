@@ -1,0 +1,38 @@
+name: 'Lambda Deploy'
+description: 'Upload a Lambda binary identified by tag to S3, write tag to Parameter Store, and run an integration test from another repo'
+inputs:
+  AWS_ACCESS_KEY_ID:
+    description: 'AWS access key ID'
+    required: true
+    default: null
+  AWS_SECRET_ACCESS_KEY:
+    description: 'AWS secret access key'
+    required: true
+    default: null
+  AWS_REGION:
+    description: 'AWS Lambda and S3 bucket region'
+    required: true
+    default: null
+  AWS_S3_BUCKET:
+    description: 'AWS S3 bucket to store Lambda binary'
+    required: true
+    default: null
+  SRC_DIR:
+    description: 'Source dir (default: .)'
+    required: false
+    default: '.'
+  DST_DIR:
+    description: 'Destination dir (default: /)'
+    required: false
+    default: '/'
+runs:
+  using: "composite"
+  steps:
+    - uses: wirecard/s3-deploy@master
+      with:
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ inputs.AWS_REGION }}
+        AWS_S3_BUCKET: ${{ inputs.AWS_S3_BUCKET }}
+        SRC_DIR: ${{ inputs.SRC_DIR }}
+        DST_DIR: ${{ inputs.DST_DIR }}
