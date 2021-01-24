@@ -5,7 +5,7 @@ A deployment pipeline for AWS Lambda functions
 
 ```
 - name: Deploy
-  uses: thekguy/lambda-pipeline@master
+  uses: thekguy/lambda-pipeline@main
   with:
     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
