@@ -33,10 +33,11 @@ runs:
   steps:
     - name: Update unit-test version in parameter store
       run: |
-        aws configure --profile ssm-put-param set aws_access_key_id ${{ inputs.AWS_ACCESS_KEY_ID }}
-        aws configure --profile ssm-put-param set aws_secret_access_key ${{ inputs.AWS_SECRET_ACCESS_KEY }}
-        aws configure --profile ssm-put-param set region ${{ inputs.AWS_REGION }}
-        aws ssm put-parameter --name "/unit-test/${{ inputs.PROGRAM_NAME }}/version" --type "String" --value ${{ inputs.NEW_TAG }} --overwrite --profile ssm-put-param
+        aws configure --profile ssm-param set aws_access_key_id ${{ inputs.AWS_ACCESS_KEY_ID }}
+        aws configure --profile ssm-param set aws_secret_access_key ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        aws configure --profile ssm-param set region ${{ inputs.AWS_REGION }}
+        ./copy-params.sh staging unit-test ssm-param
+        aws ssm put-parameter --name "/version/unit-test/${{ inputs.PROGRAM_NAME }}" --type "String" --value ${{ inputs.NEW_TAG }} --overwrite --profile ssm-param
       shell: bash
     - name: Run tests
       run: |
@@ -49,5 +50,5 @@ runs:
       shell: bash
     - name: Update staging version in parameter store
       run: |
-        aws ssm put-parameter --name "/staging/${{ inputs.PROGRAM_NAME }}/version" --type "String" --value ${{ inputs.NEW_TAG }} --overwrite --profile ssm-put-param
+        ./copy-params.sh unit-test staging ssm-param
       shell: bash
