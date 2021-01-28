@@ -19,8 +19,8 @@ inputs:
     default: ''
   NEW_TAG:
     description: 'Tag that represents the version of the binary that is being run through the pipeline'
-    required: true
-    default: null
+    required: false
+    default: ''
   TEST_DIR:
     description: 'Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda'
     required: true
@@ -28,6 +28,7 @@ inputs:
   TEST_NAME:
     description: 'Optional name of the go test program to be run (e.g. mytest.go)'
     required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'
