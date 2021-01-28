@@ -11,7 +11,10 @@ aws configure --profile ssm-param set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
 aws configure --profile ssm-param set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
 aws configure --profile ssm-param set region "${AWS_REGION}"
 ./copy-params.sh staging unit-test ssm-param
-aws ssm put-parameter --name "/version/unit-test/${PROGRAM_NAME}" --type "String" --value "${NEW_TAG}" --overwrite --profile ssm-param
+
+if [ -n "${PROGRAM_NAME}" ]; then
+    aws ssm put-parameter --name "/version/unit-test/${PROGRAM_NAME}" --type "String" --value "${NEW_TAG}" --overwrite --profile ssm-param
+fi
 
 # Run tests
 pushd "${TEST_DIR}"

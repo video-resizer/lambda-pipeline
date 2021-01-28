@@ -15,8 +15,8 @@ inputs:
     default: null
   PROGRAM_NAME:
     description: 'Program whose binary is being run through the pipeline'
-    required: true
-    default: null
+    required: false 
+    default: ''
   NEW_TAG:
     description: 'Tag that represents the version of the binary that is being run through the pipeline'
     required: true
