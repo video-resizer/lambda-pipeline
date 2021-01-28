@@ -22,33 +22,20 @@ inputs:
     required: true
     default: null
   TEST_DIR:
-    description: Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda"
+    description: 'Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda'
     required: true
     default: null
   TEST_NAME:
-    description: Optional name of the go test program to be run (e.g. mytest.go)
+    description: 'Optional name of the go test program to be run (e.g. mytest.go)'
     required: false
 runs:
-  using: "composite"
-  steps:
-    - name: Update unit-test version in parameter store
-      run: |
-        aws configure --profile ssm-param set aws_access_key_id ${{ inputs.AWS_ACCESS_KEY_ID }}
-        aws configure --profile ssm-param set aws_secret_access_key ${{ inputs.AWS_SECRET_ACCESS_KEY }}
-        aws configure --profile ssm-param set region ${{ inputs.AWS_REGION }}
-        ./copy-params.sh staging unit-test ssm-param
-        aws ssm put-parameter --name "/version/unit-test/${{ inputs.PROGRAM_NAME }}" --type "String" --value ${{ inputs.NEW_TAG }} --overwrite --profile ssm-param
-      shell: bash
-    - name: Run tests
-      run: |
-        pushd ${{ inputs.TEST_DIR }}
-        go test -count=1 -v -timeout 30m ${{ inputs.TEST_NAME }}
-        popd
-      env:
-        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }} 
-      shell: bash
-    - name: Update staging version in parameter store
-      run: |
-        ./copy-params.sh unit-test staging ssm-param
-      shell: bash
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.AWS_ACCESS_KEY_ID }}
+    - ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+    - ${{ inputs.AWS_REGION }}
+    - ${{ inputs.PROGRAM_NAME }}
+    - ${{ inputs.NEW_TAG }}
+    - ${{ inputs.TEST_DIR }}
+    - ${{ inputs.TEST_NAME }}
