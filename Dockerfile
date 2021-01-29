@@ -1,9 +1,21 @@
 # Container image that runs your code
-FROM alpine:3.10
+FROM python:3.8-alpine
+
+RUN apk add --update --no-cache curl jq
+RUN apk add --no-cache bash
+RUN apk add --no-cache gcc musl-dev
+RUN pip install awscli
+COPY --from=golang:1.13-alpine /usr/local/go/ /usr/local/go/
+
+RUN wget https://releases.hashicorp.com/terraform/0.14.4/terraform_0.14.4_linux_amd64.zip
+RUN unzip terraform_0.14.4_linux_amd64.zip && rm terraform_0.14.4_linux_amd64.zip
+RUN mv terraform /usr/bin/terraform
 
 # Copies your code file from your action repository to the filesystem path `/` of the container
-COPY entrypoint.sh /entrypoint.sh
+ADD entrypoint.sh /entrypoint.sh
 COPY copy_params.sh /copy_params.sh
+
+ENV PATH="/usr/local/go/bin:${PATH}"
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]
