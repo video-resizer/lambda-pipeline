@@ -26,13 +26,13 @@ TEST_DIR="${INPUT_TEST_DIR}"
 TEST_NAME="${INPUT_TEST_NAME}"
 
 # Update unit-test version in parameter store
-aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
-aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
-aws configure set region "${AWS_REGION}"
-copy_params staging unit-test ssm-param
+aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}" || exit 1
+aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}" || exit 1
+aws configure set region "${AWS_REGION}" || exit 1
+copy_params staging unit-test ssm-param || exit 1
 
 if [ -n "${PROGRAM_NAME}" ]; then
-    aws ssm put-parameter --name "/version/unit-test/${PROGRAM_NAME}" --type "String" --value "${NEW_TAG}" --overwrite 
+    aws ssm put-parameter --name "/version/unit-test/${PROGRAM_NAME}" --type "String" --value "${NEW_TAG}" --overwrite || exit 1
 fi
 
 # Run tests
@@ -43,4 +43,4 @@ popd
 [ "${gotest_result}" -eq 0 ] || exit 1
 
 # Update staging version in parameter store
-copy_params unit-test staging ssm-param
+copy_params unit-test staging ssm-param || exit 1
