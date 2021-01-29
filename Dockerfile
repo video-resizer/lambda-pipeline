@@ -13,7 +13,6 @@ RUN mv terraform /usr/bin/terraform
 
 # Copies your code file from your action repository to the filesystem path `/` of the container
 ADD entrypoint.sh /entrypoint.sh
-COPY copy_params.sh /copy_params.sh
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 
