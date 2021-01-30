@@ -31,7 +31,7 @@ inputs:
     default: ''
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://thekguy/lambda-pipeline'
   args:
     - ${{ inputs.AWS_ACCESS_KEY_ID }}
     - ${{ inputs.AWS_SECRET_ACCESS_KEY }}
