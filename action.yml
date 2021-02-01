@@ -29,6 +29,10 @@ inputs:
     description: 'Optional name of the go test program to be run (e.g. mytest.go)'
     required: false
     default: ''
+  LIVE_DIR:
+    description: 'Directory containing the TerraGrunt configuration to deploy the successfully-tested Terraform code to staging. If empty, no deployment to staging is made.'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
@@ -40,3 +44,4 @@ runs:
     - ${{ inputs.NEW_TAG }}
     - ${{ inputs.TEST_DIR }}
     - ${{ inputs.TEST_NAME }}
+    - ${{ inputs.LIVE_DIR }}
