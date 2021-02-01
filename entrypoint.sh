@@ -17,6 +17,10 @@ copy_params() {
     done
 }
 
+function gotest(){
+    find $1 -name '*.go' | xargs -n1 -P1 go test -v -timeout 30m
+}
+
 # Update unit-test version in parameter store
 aws configure set aws_access_key_id "${INPUT_AWS_ACCESS_KEY_ID}" || exit 1
 aws configure set aws_secret_access_key "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
@@ -29,7 +33,11 @@ fi
 
 # Run tests
 pushd "${GITHUB_WORKSPACE}"/"${INPUT_TEST_DIR}"
-go test -count=1 -v -timeout 30m "${INPUT_TEST_NAME}"
+if [ -n "${INPUT_TEST_NAME}" ]; then
+    go test -v -timeout 30m "${INPUT_TEST_NAME}"
+else
+    gotest .
+fi
 gotest_result=$?
 popd
 [ "${gotest_result}" -eq 0 ] || exit 1
