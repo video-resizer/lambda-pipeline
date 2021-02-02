@@ -23,8 +23,8 @@ inputs:
     default: ''
   TEST_DIR:
     description: 'Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda'
-    required: true
-    default: null
+    required: false
+    default: 'modules/test'
   TEST_NAME:
     description: 'Optional name of the go test program to be run (e.g. mytest.go)'
     required: false
@@ -32,7 +32,7 @@ inputs:
   LIVE_DIR:
     description: 'Directory containing the TerraGrunt configuration to deploy the successfully-tested Terraform code to staging. If empty, no deployment to staging is made.'
     required: false
-    default: ''
+    default: 'modules/live'
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
