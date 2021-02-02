@@ -17,10 +17,18 @@ inputs:
     description: 'Program whose binary is being run through the pipeline'
     required: false 
     default: ''
+  EXTENSION:
+    description: 'Archive file extension (zip or jar) of the binary being run through the pipeline'
+    required: false
+    default: 'zip'
   NEW_TAG:
     description: 'Tag that represents the version of the binary that is being run through the pipeline'
     required: false
     default: ''
+  BINARY_DIR:
+    description: 'Directory containing the archive file that is being run through the pipeline'
+    required: false
+    default: 'deployment_package'
   TEST_DIR:
     description: 'Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda'
     required: false
@@ -41,7 +49,9 @@ runs:
     - ${{ inputs.AWS_SECRET_ACCESS_KEY }}
     - ${{ inputs.AWS_REGION }}
     - ${{ inputs.PROGRAM_NAME }}
+    - ${{ inputs.EXTENSION }}
     - ${{ inputs.NEW_TAG }}
+    - ${{ inputs.BINARY_DIR }}
     - ${{ inputs.TEST_DIR }}
     - ${{ inputs.TEST_NAME }}
     - ${{ inputs.LIVE_DIR }}
