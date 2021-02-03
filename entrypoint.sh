@@ -22,17 +22,15 @@ function gotest(){
 }
 
 # Update unit-test version in parameter store
-archive_filename="${INPUT_PROGRAM_NAME}-${INPUT_NEW_TAG}.${INPUT_EXTENSION}"
+archive_filename="${INPUT_PROGRAM_NAME}.${INPUT_EXTENSION}"
 sha=$(sha256sum "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | cut -d " " -f1)
 
 aws configure set aws_access_key_id "${INPUT_AWS_ACCESS_KEY_ID}" || exit 1
 aws configure set aws_secret_access_key "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
 aws configure set region "${INPUT_AWS_REGION}" || exit 1
-copy_params version staging unit-test || exit 1
 copy_params sha staging unit-test || exit 1
 
 if [ -n "${INPUT_PROGRAM_NAME}" ]; then
-    aws ssm put-parameter --name "/version/unit-test/${INPUT_PROGRAM_NAME}" --type "String" --value "${INPUT_NEW_TAG}" --overwrite || exit 1
     aws ssm put-parameter --name "/sha/unit-test/${INPUT_PROGRAM_NAME}" --type "String" --value "${sha}" --overwrite || exit 1
 fi
 
@@ -48,7 +46,6 @@ popd
 [ "${gotest_result}" -eq 0 ] || exit 1
 
 # Update staging version in parameter store
-copy_params version unit-test staging || exit 1
 copy_params sha unit-test staging || exit 1
 
 # Deploy to staging
