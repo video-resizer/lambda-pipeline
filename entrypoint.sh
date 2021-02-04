@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euf -o pipefail
+set -x
 
 copy_params() {
     type="${1}"
@@ -17,7 +19,7 @@ copy_params() {
         destinationval=$(aws ssm get-parameter --name "/${type}/${destination}/${repo}" | jq ".Parameter.Value")
         if [ "${sourceval}" != "${destinationval}" ]; then
             sourcevalnoquotes=$(echo "${sourceval}" | sed 's/"//g')
-            aws s3 sync "s3://${bucketprefix}-${source}/${filename}" "s3://${bucketprefix}-${destination}/${filename}"
+            aws s3 cp "s3://${bucketprefix}-${source}/build_artifacts/${filename}" "s3://${bucketprefix}-${destination}/build_artifacts/${filename}"
             aws ssm put-parameter --name "/${type}/${destination}/${repo}" --type "String" --value "${sourcevalnoquotes}" --overwrite
         fi
     done
@@ -37,6 +39,7 @@ aws configure set region "${INPUT_AWS_REGION}" || exit 1
 copy_params sha staging unit-test "${INPUT_BUCKET_PREFIX}" "${archive_filename}" || exit 1
 
 if [ -n "${INPUT_PROGRAM_NAME}" ]; then
+    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}"
     aws ssm put-parameter --name "/sha/unit-test/${INPUT_PROGRAM_NAME}" --type "String" --value "${sha}" --overwrite || exit 1
 fi
 
