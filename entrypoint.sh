@@ -29,7 +29,7 @@ function gotest(){
 
 # Update unit-test version in parameter store
 archive_filename="${INPUT_PROGRAM_NAME}.${INPUT_EXTENSION}"
-sha=$(sha256sum "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | cut -d " " -f1)
+sha=$(openssl dgst -sha256 -binary "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | openssl enc -base64)
 
 aws configure set aws_access_key_id "${INPUT_AWS_ACCESS_KEY_ID}" || exit 1
 aws configure set aws_secret_access_key "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
