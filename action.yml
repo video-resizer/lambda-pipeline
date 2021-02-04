@@ -37,6 +37,10 @@ inputs:
     description: 'Directory containing the TerraGrunt configuration to deploy the successfully-tested Terraform code to staging. If empty, no deployment to staging is made.'
     required: false
     default: 'modules/live'
+  BUCKET_PREFIX:
+    description: 'Prefix that is combined with the environment (unit-test or staging) to determine the S3 bucket in which to place built binaries.'
+    required: false
+    default: 'com-thekguy-build-output'
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
@@ -50,3 +54,4 @@ runs:
     - ${{ inputs.TEST_DIR }}
     - ${{ inputs.TEST_NAME }}
     - ${{ inputs.LIVE_DIR }}
+    - ${{ inputs.BUCKET_PREFIX }}
