@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euf -o pipefail
-set -x
 
 copy_params() {
     type="${1}"
@@ -9,18 +8,14 @@ copy_params() {
     bucketprefix="${4}"
     filename="${5}"
 
-    eval "arr=( $(aws ssm get-parameters-by-path --path "/${type}/${source}/" | jq -r '@sh "\(.Parameters[].Name)"' ) )"
-
+    eval "arr=( $(aws s3api list-objects --bucket "${bucketprefix}-${source}" --query 'Contents[].Key' | jq -r '[.[] | select(endswith(".zip"))] | @sh' ) )"
     for key in "${arr[@]}"
     do
-        noquotes=$(echo "${key}" | sed 's/"//g')
-        repo=$(echo "${noquotes}" | sed 's|.*/||')
-        sourceval=$(aws ssm get-parameter --name "${key}" | jq ".Parameter.Value")
-        destinationval=$(aws ssm get-parameter --name "/${type}/${destination}/${repo}" | jq ".Parameter.Value")
+        sourceval=$(aws s3api head-object --bucket "${bucketprefix}-${source}" --key "${key}" | jq .Metadata.sha256)
+        destinationval=$(aws s3api head-object --bucket "${bucketprefix}-${destination}" --key "${key}" | jq .Metadata.sha256)
         if [ "${sourceval}" != "${destinationval}" ]; then
             sourcevalnoquotes=$(echo "${sourceval}" | sed 's/"//g')
-            aws s3 cp "s3://${bucketprefix}-${source}/build_artifacts/${filename}" "s3://${bucketprefix}-${destination}/build_artifacts/${filename}"
-            aws ssm put-parameter --name "/${type}/${destination}/${repo}" --type "String" --value "${sourcevalnoquotes}" --overwrite
+            aws s3 cp "s3://${bucketprefix}-${source}/build_artifacts/${filename}" "s3://${bucketprefix}-${destination}/build_artifacts/${filename}" --metadata "sha256=${sourceval}"
         fi
     done
 }
@@ -39,8 +34,7 @@ aws configure set region "${INPUT_AWS_REGION}" || exit 1
 copy_params sha staging unit-test "${INPUT_BUCKET_PREFIX}" "${archive_filename}" || exit 1
 
 if [ -n "${INPUT_PROGRAM_NAME}" ]; then
-    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}"
-    aws ssm put-parameter --name "/sha/unit-test/${INPUT_PROGRAM_NAME}" --type "String" --value "${sha}" --overwrite || exit 1
+    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}"
 fi
 
 # Run tests
