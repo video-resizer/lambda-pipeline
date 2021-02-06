@@ -3,7 +3,9 @@ A deployment pipeline for AWS Lambda functions
 
 ## Description
 
-Given a program name, git tag, and directory containing integration tests, this action promotes via parameter store tag updates and tests the program as a Lambda. It assumes that your test program creates/updates the Lambda as part of its execution and, in the process, looks up an AWS SSM parameter located under 'phase/PROGRAM_NAME/version' to compute the name of the Lambda's zip file, where phase is currently limited to 'unit-test' and 'staging'.
+Given the name of an archive file (PROGRAM\_NAME) and the name of a directory containing integration tests (TEST\_DIR), this action uploads the archive file to an S3 bucket having a name consisting of BUCKET\_PREFIX and "-unit-test", and executes the test(s). Upon success, it copies the archive file from the original bucket to a bucket having a name consisting of BUCKET\_PREFIX and "-staging". If the optional LIVE\_DIR argument is passed, the action will execute the terragrunt apply-all command against the contents of LIVE\_DIR.
+
+If PROGRAM\_NAME is empty, no archive file is uploaded to S3, but tests are still run.
 
 ## Usage
 
@@ -14,20 +16,23 @@ Given a program name, git tag, and directory containing integration tests, this 
     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     AWS_REGION: ${{ secrets.AWS_REGION }}
+    BUCKET_PREFIX: my-unique-bucket-prefix
     PROGRAM_NAME: myprogram
-    NEW_TAG: ${{ steps.version.outputs.new_tag }} # if using anothrNick/github-tag-action
     TEST_DIR: test
     TEST_NAME: mytest.go
 ```
 
 ### Variables
 
-| Name                    | Required | Default |
-|-------------------------|----------|---------|
-| `AWS_ACCESS_KEY_ID`     | true     |         |
-| `AWS_SECRET_ACCESS_KEY` | true     |         |
-| `AWS_REGION`            | true     |         |
-| `PROGRAM_NAME`          | true     |         |
-| `NEW_TAG`               | true     |         |
-| `TEST_DIR`              | true     |         |
-| `TEST_NAME`             | false    |         |
+| Name                    | Required | Default             |
+|-------------------------|----------|---------------------|
+| `AWS_ACCESS_KEY_ID`     | true     |                     |
+| `AWS_SECRET_ACCESS_KEY` | true     |                     |
+| `AWS_REGION`            | true     |                     |
+| `BUCKET_PREFIX`         | true     |                     |
+| `PROGRAM_NAME`          | false    |                     |
+| `EXTENSION`             | false    | zip                 |
+| `BINARY_DIR`            | false    | deployment\_package |
+| `TEST_DIR`              | false    | modules/test        |
+| `TEST_NAME`             | false    |                     |
+| `LIVE_DIR`              | false    | modules/live        |

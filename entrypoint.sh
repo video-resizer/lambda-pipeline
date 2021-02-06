@@ -1,12 +1,13 @@
 #!/bin/bash
 set -euf -o pipefail
+set -x
 
 copy_params() {
     source="${1}"
     destination="${2}"
     bucketprefix="${3}"
 
-    eval "arr=( $(aws s3api list-objects --bucket "${bucketprefix}-${source}" --query 'Contents[].Key' | jq -r '[.[] | select(endswith(".zip"))] | @sh' ) )"
+    eval "arr=( $(aws s3api list-objects --bucket "${bucketprefix}-${source}" --query 'Contents[].Key' | jq -r '[.[] | select(endswith(".zip") or endswith(".jar"))] | @sh' ) )"
     for key in "${arr[@]}"
     do
         sourceval=$(aws s3api head-object --bucket "${bucketprefix}-${source}" --key "${key}" | jq .Metadata.sha256)

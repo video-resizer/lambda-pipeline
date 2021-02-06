@@ -1,46 +1,47 @@
 name: 'Lambda Pipeline'
-description: 'Given a program name, git tag, and directory containing integration tests, this action promotes via parameter store tag updates and tests the program as a Lambda'
+description: 'Given the name of an archive file (PROGRAM\_NAME) and the name of a directory containing integration tests (TEST\_DIR), this action uploads the archive file to an S3 bucket having a name consisting of BUCKET\_PREFIX and "-unit-test", and executes the test(s).
+Upon success, it copies the archive file from the original bucket to a bucket having a name consisting of BUCKET\_PREFIX and "-staging". If the optional LIVE\_DIR argument is passed, the action will execute the terragrunt apply-all command against the contents of LIVE\_DIR.'
 inputs:
   AWS_ACCESS_KEY_ID:
-    description: 'AWS access key ID'
+    description: 'AWS access key ID.'
     required: true
     default: null
   AWS_SECRET_ACCESS_KEY:
-    description: 'AWS secret access key'
+    description: 'AWS secret access key.'
     required: true
     default: null
   AWS_REGION:
-    description: 'AWS Lambda and S3 bucket region'
+    description: 'AWS Lambda and S3 bucket region.'
     required: true
     default: null
+  BUCKET_PREFIX:
+    description: 'Prefix that is combined with the environment (unit-test or staging) to determine the S3 bucket in which to place built binaries.'
+    required: false
+    default: 'com-thekguy-build-output'
   PROGRAM_NAME:
-    description: 'Program whose binary is being run through the pipeline'
+    description: 'Program whose binary is being run through the pipeline. Leave blank to exercise the tests without a new binary upload.'
     required: false 
     default: ''
   EXTENSION:
-    description: 'Archive file extension (zip or jar) of the binary being run through the pipeline'
+    description: 'Archive file extension (zip or jar) of the binary being run through the pipeline.'
     required: false
     default: 'zip'
   BINARY_DIR:
-    description: 'Directory containing the archive file that is being run through the pipeline'
+    description: 'Directory containing the archive file that is being run through the pipeline.'
     required: false
     default: 'deployment_package'
   TEST_DIR:
-    description: 'Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda'
+    description: 'Directory containing the integration tests to be executed to verify the new binary runs successfully in a Lambda.'
     required: false
     default: 'modules/test'
   TEST_NAME:
-    description: 'Optional name of the go test program to be run (e.g. mytest.go)'
+    description: 'Optional name of the go test program to be run (e.g. mytest.go).'
     required: false
     default: ''
   LIVE_DIR:
     description: 'Directory containing the TerraGrunt configuration to deploy the successfully-tested Terraform code to staging. If empty, no deployment to staging is made.'
     required: false
     default: 'modules/live'
-  BUCKET_PREFIX:
-    description: 'Prefix that is combined with the environment (unit-test or staging) to determine the S3 bucket in which to place built binaries.'
-    required: false
-    default: 'com-thekguy-build-output'
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
@@ -48,10 +49,10 @@ runs:
     - ${{ inputs.AWS_ACCESS_KEY_ID }}
     - ${{ inputs.AWS_SECRET_ACCESS_KEY }}
     - ${{ inputs.AWS_REGION }}
+    - ${{ inputs.BUCKET_PREFIX }}
     - ${{ inputs.PROGRAM_NAME }}
     - ${{ inputs.EXTENSION }}
     - ${{ inputs.BINARY_DIR }}
     - ${{ inputs.TEST_DIR }}
     - ${{ inputs.TEST_NAME }}
     - ${{ inputs.LIVE_DIR }}
-    - ${{ inputs.BUCKET_PREFIX }}
