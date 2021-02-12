@@ -6,6 +6,11 @@ RUN apk add --no-cache bash
 RUN apk add --no-cache gcc musl-dev
 RUN apk add --no-cache findutils
 RUN apk add --no-cache acf-openssl
+RUN apk --update add git less openssh && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm /var/cache/apk/*
+
+
 RUN pip install awscli
 COPY --from=golang:1.15-alpine /usr/local/go/ /usr/local/go/
 
