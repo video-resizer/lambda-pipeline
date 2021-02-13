@@ -22,19 +22,32 @@ function gotest(){
     find $1 -name '*.go' | xargs -n1 -P1 go test -v -timeout 30m
 }
 
-aws configure set aws_access_key_id "${INPUT_AWS_ACCESS_KEY_ID}" || exit 1
-aws configure set aws_secret_access_key "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
+function use_input_credentials() {
+    key_id="${1}"
+    secret="${2}"
+    aws configure set aws_access_key_id "${key_id}" || exit 1
+    aws configure set aws_secret_access_key "${secret}" || exit 1
+    aws configure set aws_session_token "" || exit 1
+}
+
+function assume_role() {
+    role_to_assume="${1}"
+    if [ -n "${role_to_assume}" ]; then
+        role_json=$(aws sts assume-role --role-arn "${role_to_assume}" --role-session-name "assume-role-to-read-bucket")
+        AK_ID=$(echo "${role_json}" | jq -r .Credentials.AccessKeyId)
+        aws configure set aws_access_key_id "${AK_ID}" || exit 1
+        SEC_AK=$(echo "${role_json}" | jq -r .Credentials.SecretAccessKey)
+        aws configure set aws_secret_access_key "${SEC_AK}" || exit 1
+        SESS=$(echo "${role_json}" | jq -r .Credentials.SessionToken)
+        aws configure set aws_session_token "${SESS}" || exit 1
+    fi
+}
+
 aws configure set region "${INPUT_AWS_REGION}" || exit 1
 
-if [ -n "${INPUT_ASSUME_ROLE}" ]; then
-    role_json=$(aws sts assume-role --role-arn "${INPUT_ASSUME_ROLE}" --role-session-name "assume-role-to-read-bucket")
-    AK_ID=$(echo "${role_json}" | jq -r .Credentials.AccessKeyId)
-    aws configure set aws_access_key_id "${AK_ID}" || exit 1
-    SEC_AK=$(echo "${role_json}" | jq -r .Credentials.SecretAccessKey)
-    aws configure set aws_secret_access_key "${SEC_AK}" || exit 1
-    SESS=$(echo "${role_json}" | jq -r .Credentials.SessionToken)
-    aws configure set aws_session_token "${SESS}" || exit 1
-fi
+use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
+
+assume_role "${INPUT_ASSUME_ROLE}"
 
 copy_params staging unit-test "${INPUT_BUCKET_PREFIX}" || exit 1
 
@@ -44,23 +57,25 @@ if [ -n "${INPUT_PROGRAM_NAME}" ]; then
     aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}"
 fi
 
+use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
+
 # Run tests
-#pushd "${GITHUB_WORKSPACE}"/"${INPUT_TEST_DIR}"
-#if [ -n "${INPUT_TEST_NAME}" ]; then
-#    go test -v -timeout 30m "${INPUT_TEST_NAME}"
-#else
-#    gotest .
-#fi
-#gotest_result=$?
-#popd
-#[ "${gotest_result}" -eq 0 ] || exit 1
+pushd "${GITHUB_WORKSPACE}"/"${INPUT_TEST_DIR}"
+if [ -n "${INPUT_TEST_NAME}" ]; then
+    go test -v -timeout 30m "${INPUT_TEST_NAME}"
+else
+    gotest .
+fi
+gotest_result=$?
+popd
+[ "${gotest_result}" -eq 0 ] || exit 1
+
+assume_role "${INPUT_ASSUME_ROLE}"
 
 # Update staging version in parameter store
 copy_params unit-test staging "${INPUT_BUCKET_PREFIX}" || exit 1
 
-aws configure set aws_access_key_id "${INPUT_AWS_ACCESS_KEY_ID}" || exit 1
-aws configure set aws_secret_access_key "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
-aws configure set aws_session_token "" || exit 1
+use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
 
 # Deploy to staging
 if [ -n "${INPUT_LIVE_DIR}" ]; then
