@@ -18,10 +18,6 @@ RUN wget https://releases.hashicorp.com/terraform/0.14.4/terraform_0.14.4_linux_
 RUN unzip terraform_0.14.4_linux_amd64.zip && rm terraform_0.14.4_linux_amd64.zip
 RUN mv terraform /usr/bin/terraform
 
-RUN wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.27.3/terragrunt_linux_amd64
-RUN chmod +x terragrunt_linux_amd64
-RUN mv terragrunt_linux_amd64 /usr/bin/terragrunt
-
 # Copies your code file from your action repository to the filesystem path `/` of the container
 ADD entrypoint.sh /entrypoint.sh
 

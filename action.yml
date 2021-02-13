@@ -42,6 +42,14 @@ inputs:
     description: 'Directory containing the TerraGrunt configuration to deploy the successfully-tested Terraform code to staging. If empty, no deployment to staging is made.'
     required: false
     default: 'modules/live'
+  COMPONENTS:
+    description: 'Space-separated list of paths relative to LIVE_DIR where terraform command is to be run.'
+    required: false
+    default: ''
+  ASSUME_ROLE:
+    description: 'The arn of a role to assume when uploading binary to S3. An empty value means the upload will be done as the user itself.'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
@@ -56,3 +64,4 @@ runs:
     - ${{ inputs.TEST_DIR }}
     - ${{ inputs.TEST_NAME }}
     - ${{ inputs.LIVE_DIR }}
+    - ${{ inputs.COMPONENTS }}
