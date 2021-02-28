@@ -16,8 +16,7 @@ inputs:
     default: null
   BUCKET_PREFIX:
     description: 'Prefix that is combined with the environment (unit-test or staging) to determine the S3 bucket in which to place built binaries.'
-    required: false
-    default: 'com-thekguy-build-output'
+    required: true
   PROGRAM_NAME:
     description: 'Program whose binary is being run through the pipeline. Leave blank to exercise the tests without a new binary upload.'
     required: false 

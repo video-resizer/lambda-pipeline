@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euf -o pipefail
+set -x
 
 copy_params() {
     source="${1}"
