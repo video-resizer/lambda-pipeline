@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euf -o pipefail
-set -x
 
 copy_params() {
     source="${1}"
@@ -8,13 +7,28 @@ copy_params() {
     bucketprefix="${3}"
 
     eval "arr=( $(aws s3api list-objects --bucket "${bucketprefix}-${source}" --query 'Contents[].Key' | jq -r '[.[] | select(endswith(".zip") or endswith(".jar"))] | @sh' ) )"
+    if [ "${#arr[@]}" -eq "0" ]; then
+      echo "s3 list-objects returned zero objects for bucket ${bucketprefix}-${source}. Quitting."
+      return 1
+    fi
+
     for key in "${arr[@]}"
     do
         sourceval=$(aws s3api head-object --bucket "${bucketprefix}-${source}" --key "${key}" | jq .Metadata.sha256)
+        if [ "${#sourceval}" -eq "0" ]; then
+          echo "s3api head-object could not get a sha256 for object ${key} in bucket ${bucketprefix}-${source}. Quitting."
+          return 1
+        fi
+
         destinationval=$(aws s3api head-object --bucket "${bucketprefix}-${destination}" --key "${key}" | jq .Metadata.sha256)
+        if [ "${#destinationval}" -eq "0" ]; then
+          echo "s3api head-object could not get a sha256 for object ${key} in bucket ${bucketprefix}-${destination}. Quitting."
+          return 1
+        fi
+
         if [ "${sourceval}" != "${destinationval}" ]; then
             sourcevalnoquotes=$(echo "${sourceval}" | sed 's/"//g')
-            aws s3 cp "s3://${bucketprefix}-${source}/${key}" "s3://${bucketprefix}-${destination}/${key}" --metadata "sha256=${sourceval}" --acl bucket-owner-full-control
+            aws s3 cp "s3://${bucketprefix}-${source}/${key}" "s3://${bucketprefix}-${destination}/${key}" --metadata "sha256=${sourceval}" --acl bucket-owner-full-control || return 1
         fi
     done
 }
@@ -26,9 +40,9 @@ function gotest(){
 function use_input_credentials() {
     key_id="${1}"
     secret="${2}"
-    aws configure set aws_access_key_id "${key_id}" || exit 1
-    aws configure set aws_secret_access_key "${secret}" || exit 1
-    aws configure set aws_session_token "" || exit 1
+    aws configure set aws_access_key_id "${key_id}" || return 1
+    aws configure set aws_secret_access_key "${secret}" || return 1
+    aws configure set aws_session_token "" || return 1
 }
 
 function assume_role() {
@@ -36,29 +50,33 @@ function assume_role() {
     if [ -n "${role_to_assume}" ]; then
         role_json=$(aws sts assume-role --role-arn "${role_to_assume}" --role-session-name "assume-role-to-read-bucket")
         AK_ID=$(echo "${role_json}" | jq -r .Credentials.AccessKeyId)
-        aws configure set aws_access_key_id "${AK_ID}" || exit 1
+        aws configure set aws_access_key_id "${AK_ID}" || return 1
         SEC_AK=$(echo "${role_json}" | jq -r .Credentials.SecretAccessKey)
-        aws configure set aws_secret_access_key "${SEC_AK}" || exit 1
+        aws configure set aws_secret_access_key "${SEC_AK}" || return 1
         SESS=$(echo "${role_json}" | jq -r .Credentials.SessionToken)
-        aws configure set aws_session_token "${SESS}" || exit 1
+        aws configure set aws_session_token "${SESS}" || return 1
     fi
 }
 
 aws configure set region "${INPUT_AWS_REGION}" || exit 1
 
-use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
+use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
 
-assume_role "${INPUT_ASSUME_ROLE}"
+assume_role "${INPUT_ASSUME_ROLE}" || exit 1
 
 copy_params staging unit-test "${INPUT_BUCKET_PREFIX}" || exit 1
 
 if [ -n "${INPUT_PROGRAM_NAME}" ]; then
     archive_filename="${INPUT_PROGRAM_NAME}.${INPUT_EXTENSION}"
     sha=$(openssl dgst -sha256 -binary "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | openssl enc -base64)
-    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}" --acl bucket-owner-full-control
+    if [ "${#sha}" -eq "0" ]; then
+      echo "Computed an empty sha256 for ${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}. Quitting."
+      exit 1
+    fi
+    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}" --acl bucket-owner-full-control || exit 1
 fi
 
-use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
+use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
 
 # Run tests
 pushd "${GITHUB_WORKSPACE}"/"${INPUT_TEST_DIR}"
@@ -71,12 +89,12 @@ gotest_result=$?
 popd
 [ "${gotest_result}" -eq 0 ] || exit 1
 
-assume_role "${INPUT_ASSUME_ROLE}"
+assume_role "${INPUT_ASSUME_ROLE}" || exit 1
 
 # Update staging version in parameter store
 copy_params unit-test staging "${INPUT_BUCKET_PREFIX}" || exit 1
 
-use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
+use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
 
 # Deploy to staging
 if [ -n "${INPUT_LIVE_DIR}" ]; then
