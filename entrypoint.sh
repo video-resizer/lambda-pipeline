@@ -13,7 +13,7 @@ copy_params() {
         destinationval=$(aws s3api head-object --bucket "${bucketprefix}-${destination}" --key "${key}" | jq .Metadata.sha256)
         if [ "${sourceval}" != "${destinationval}" ]; then
             sourcevalnoquotes=$(echo "${sourceval}" | sed 's/"//g')
-            aws s3 cp "s3://${bucketprefix}-${source}/${key}" "s3://${bucketprefix}-${destination}/${key}" --metadata "sha256=${sourceval}"
+            aws s3 cp "s3://${bucketprefix}-${source}/${key}" "s3://${bucketprefix}-${destination}/${key}" --metadata "sha256=${sourceval}" --acl bucket-owner-full-control
         fi
     done
 }
@@ -54,7 +54,7 @@ copy_params staging unit-test "${INPUT_BUCKET_PREFIX}" || exit 1
 if [ -n "${INPUT_PROGRAM_NAME}" ]; then
     archive_filename="${INPUT_PROGRAM_NAME}.${INPUT_EXTENSION}"
     sha=$(openssl dgst -sha256 -binary "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | openssl enc -base64)
-    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}"
+    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}" --acl bucket-owner-full-control
 fi
 
 use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}"
