@@ -73,7 +73,7 @@ if [ -n "${INPUT_PROGRAM_NAME}" ]; then
       echo "Computed an empty sha256 for ${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}. Quitting."
       exit 1
     fi
-    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${bucketprefix}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}" --acl bucket-owner-full-control || exit 1
+    aws s3 cp "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" "s3://${INPUT_BUCKET_PREFIX}-unit-test/build_artifacts/${archive_filename}" --metadata "sha256=${sha}" --acl bucket-owner-full-control || exit 1
 fi
 
 use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
