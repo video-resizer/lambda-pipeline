@@ -67,8 +67,8 @@ assume_role "${INPUT_ASSUME_ROLE}" || exit 1
 copy_params staging unit-test "${INPUT_BUCKET_PREFIX}" || exit 1
 
 if [ -n "${INPUT_PROGRAM_NAME}" ]; then
-    local archive_filename="${INPUT_PROGRAM_NAME}.${INPUT_EXTENSION}"
-    local sha=$(openssl dgst -sha256 -binary "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | openssl enc -base64)
+    archive_filename="${INPUT_PROGRAM_NAME}.${INPUT_EXTENSION}"
+    sha=$(openssl dgst -sha256 -binary "${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}" | openssl enc -base64)
     if [ "${#sha}" -eq "0" ]; then
       echo "Computed an empty sha256 for ${GITHUB_WORKSPACE}/${INPUT_BINARY_DIR}/${archive_filename}. Quitting."
       exit 1
@@ -98,13 +98,13 @@ use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KE
 
 # Deploy to staging
 if [ -n "${INPUT_LIVE_DIR}" ]; then
-    local comp_array=($INPUT_COMPONENTS)
+    comp_array=($INPUT_COMPONENTS)
     for key in "${comp_array[@]}"
     do
         pushd "${GITHUB_WORKSPACE}"/"${INPUT_LIVE_DIR}/${key}"
         terraform init
         terraform apply -auto-approve
-        local terraform_result=$?
+        terraform_result=$?
         popd
     done
     [ "${terraform_result}" -eq 0 ] || exit 1
