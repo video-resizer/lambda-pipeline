@@ -85,7 +85,7 @@ if [ -n "${INPUT_TEST_NAME}" ]; then
 else
     gotest .
 fi
-local gotest_result=$?
+gotest_result=$?
 popd
 [ "${gotest_result}" -eq 0 ] || exit 1
 
