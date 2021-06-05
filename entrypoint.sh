@@ -109,3 +109,7 @@ if [ -n "${INPUT_LIVE_DIR}" ]; then
     done
     [ "${terraform_result}" -eq 0 ] || exit 1
 fi
+
+if [ -n "${CLEANUP_SCRIPT}" ]; then
+    source "${CLEANUP_SCRIPT}"
+fi

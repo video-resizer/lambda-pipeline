@@ -49,6 +49,10 @@ inputs:
     description: 'The arn of a role to assume when uploading binary to S3. An empty value means the upload will be done as the user itself.'
     required: false
     default: ''
+  CLEANUP_SCRIPT:
+    description: 'The name of a script to be run after testing is complete, typically for cleaning up any state created by the tests.'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
@@ -65,3 +69,4 @@ runs:
     - ${{ inputs.LIVE_DIR }}
     - ${{ inputs.COMPONENTS }}
     - ${{ inputs.ASSUME_ROLE }}
+    - ${{ inputs.CLEANUP_SCRIPT }}
