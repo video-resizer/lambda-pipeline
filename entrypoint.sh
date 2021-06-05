@@ -89,6 +89,11 @@ gotest_result=$?
 popd
 [ "${gotest_result}" -eq 0 ] || exit 1
 
+# Clean up unit-test environment
+if [ -n "${CLEANUP_SCRIPT}" ]; then
+    source "${CLEANUP_SCRIPT}"
+fi
+
 assume_role "${INPUT_ASSUME_ROLE}" || exit 1
 
 # Update staging version in parameter store
@@ -110,6 +115,7 @@ if [ -n "${INPUT_LIVE_DIR}" ]; then
     [ "${terraform_result}" -eq 0 ] || exit 1
 fi
 
+# Clean up staging environment
 if [ -n "${CLEANUP_SCRIPT}" ]; then
     source "${CLEANUP_SCRIPT}"
 fi
