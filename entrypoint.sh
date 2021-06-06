@@ -91,7 +91,7 @@ popd
 
 # Clean up unit-test environment
 if [ -n "${INPUT_CLEANUP_SCRIPT}" ]; then
-    source "${INPUT_CLEANUP_SCRIPT}"
+    source "${INPUT_CLEANUP_SCRIPT}" "${GITHUB_WORKSPACE}"/"${INPUT_TEST_DIR}"/..
 fi
 
 assume_role "${INPUT_ASSUME_ROLE}" || exit 1
@@ -113,9 +113,9 @@ if [ -n "${INPUT_LIVE_DIR}" ]; then
         popd
     done
     [ "${terraform_result}" -eq 0 ] || exit 1
-fi
 
-# Clean up staging environment
-if [ -n "${INPUT_CLEANUP_SCRIPT}" ]; then
-    source "${INPUT_CLEANUP_SCRIPT}"
+    # Clean up staging environment
+    if [ -n "${INPUT_CLEANUP_SCRIPT}" ]; then
+        source "${INPUT_CLEANUP_SCRIPT}" "${GITHUB_WORKSPACE}"/"${INPUT_LIVE_DIR}"/..
+    fi
 fi
