@@ -90,8 +90,8 @@ popd
 [ "${gotest_result}" -eq 0 ] || exit 1
 
 # Clean up unit-test environment
-if [ -n "${CLEANUP_SCRIPT}" ]; then
-    source "${CLEANUP_SCRIPT}"
+if [ -n "${INPUT_CLEANUP_SCRIPT}" ]; then
+    source "${INPUT_CLEANUP_SCRIPT}"
 fi
 
 assume_role "${INPUT_ASSUME_ROLE}" || exit 1
@@ -116,6 +116,6 @@ if [ -n "${INPUT_LIVE_DIR}" ]; then
 fi
 
 # Clean up staging environment
-if [ -n "${CLEANUP_SCRIPT}" ]; then
-    source "${CLEANUP_SCRIPT}"
+if [ -n "${INPUT_CLEANUP_SCRIPT}" ]; then
+    source "${INPUT_CLEANUP_SCRIPT}"
 fi
