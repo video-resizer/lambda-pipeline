@@ -12,7 +12,7 @@ RUN apk --update add git less openssh && \
 
 
 RUN pip install awscli
-COPY --from=golang:1.16-alpine /usr/local/go/ /usr/local/go/
+COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
 
 RUN wget https://releases.hashicorp.com/terraform/0.15.5/terraform_0.15.5_linux_amd64.zip
 RUN unzip terraform_0.15.5_linux_amd64.zip && rm terraform_0.15.5_linux_amd64.zip
