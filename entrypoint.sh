@@ -103,6 +103,9 @@ use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KE
 
 # Deploy to staging
 if [ -n "${INPUT_LIVE_DIR}" ] && [[ "${INPUT_BRANCH}" = "develop" ]]; then
+    echo "======================="
+    echo "DEPLOYING TO STAGING..."
+    echo "======================="
     comp_array=($INPUT_COMPONENTS)
     for key in "${comp_array[@]}"
     do
@@ -118,4 +121,8 @@ if [ -n "${INPUT_LIVE_DIR}" ] && [[ "${INPUT_BRANCH}" = "develop" ]]; then
     if [ -n "${INPUT_CLEANUP_SCRIPT}" ]; then
         source "${INPUT_CLEANUP_SCRIPT}" "${GITHUB_WORKSPACE}"/"${INPUT_LIVE_DIR}"/..
     fi
+else
+    echo "======================="
+    echo "NO DEPLOY TO STAGING..."
+    echo "======================="
 fi
