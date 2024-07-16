@@ -102,7 +102,7 @@ copy_params unit-test staging "${INPUT_BUCKET_PREFIX}" || exit 1
 use_input_credentials "${INPUT_AWS_ACCESS_KEY_ID}" "${INPUT_AWS_SECRET_ACCESS_KEY}" || exit 1
 
 # Deploy to staging
-if [ -n "${INPUT_LIVE_DIR}" ]; then
+if [ -n "${INPUT_LIVE_DIR}" ] && [[ "${INPUT_BRANCH}" = "develop" ]]; then
     comp_array=($INPUT_COMPONENTS)
     for key in "${comp_array[@]}"
     do

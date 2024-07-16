@@ -53,6 +53,10 @@ inputs:
     description: 'The name of a script to be run after testing is complete, typically for cleaning up any state created by the tests.'
     required: false
     default: ''
+  BRANCH:
+    description: 'The branch the script is being run in. Deploy to LIVE_DIR only if the branch is develop.'
+    required: false
+    default: 'develop'
 runs:
   using: 'docker'
   image: 'docker://thekguy/lambda-pipeline'
