@@ -14,9 +14,8 @@ RUN apk --update add git less openssh && \
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
 
-RUN release=`curl -s https://api.github.com/repos/hashicorp/terraform/releases/latest |  grep tag_name | cut -d: -f2 | tr -d \"\,\v | awk '{$1=$1};1'`
-RUN wget https://releases.hashicorp.com/terraform/${release}/terraform_${release}_linux_amd64.zip
-RUN unzip terraform_${release}_linux_amd64.zip && rm terraform_${release}_linux_amd64.zip
+RUN wget https://releases.hashicorp.com/terraform/1.9.3/terraform_1.9.3_linux_amd64.zip
+RUN unzip terraform_1.9.3_linux_amd64.zip && rm terraform_1.9.3_linux_amd64.zip
 RUN mv terraform /usr/bin/terraform
 
 # Copies your code file from your action repository to the filesystem path `/` of the container
