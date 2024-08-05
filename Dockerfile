@@ -2,30 +2,27 @@
 FROM python:3.10-slim-bullseye
 
 RUN apt update
-RUN apt install curl
-RUN apt install jq
+RUN apt-get update \
+    && apt-get install -y curl jq
 RUN apt install bash
 RUN apt-get -y install findutils
 # RUN apk add --no-cache gcc musl-dev
 # RUN apk add --no-cache acf-openssl
 RUN apt install openssl
+RUN apt install unzip
+RUN apt-get install -y wget
 
 #RUN apk --update add git less openssh && \
 #    rm -rf /var/lib/apt/lists/* && \
 #    rm /var/cache/apk/*0
 
-RUN apt-get update && \
-    apt-get install -y \
-        unzip \
-        curl \
+RUN apt-get update \
     && apt-get clean \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && ./aws/install \
     && rm -rf \
-        awscliv2.zip \
-    && apt-get -y purge curl \
-    && apt-get -y purge unzip 
+        awscliv2.zip
 
 COPY --from=golang:1.22.5-bullseye /usr/local/go/ /usr/local/go/
 
