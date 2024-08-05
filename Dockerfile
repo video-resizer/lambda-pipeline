@@ -1,5 +1,5 @@
 # Container image that runs your code
-FROM python:3.10-alpine
+FROM python:3.10-slim-bullseye
 
 RUN apk add --update --no-cache curl jq
 RUN apk add --no-cache bash
@@ -9,10 +9,6 @@ RUN apk add --no-cache acf-openssl
 RUN apk --update add git less openssh && \
     rm -rf /var/lib/apt/lists/* && \
     rm /var/cache/apk/*
-RUN apk --no-cache add ca-certificates wget
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
-RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk
-RUN apk add glibc-2.28-r0.apk
 
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
