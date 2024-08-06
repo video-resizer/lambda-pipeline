@@ -1,14 +1,19 @@
 # Container image that runs your code
 FROM public.ecr.aws/lambda/python:3.10-x86_64
 
-RUN apk add --update --no-cache curl jq
-RUN apk add --no-cache bash
-RUN apk add --no-cache gcc musl-dev
-RUN apk add --no-cache findutils
-RUN apk add --no-cache acf-openssl
-RUN apk --update add git less openssh && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm /var/cache/apk/*
+RUN yum makecache
+RUN yum -y install jq
+RUN yum -y install curl
+
+#RUN yum -y group install "Development Tools"
+RUN yum install findutils
+RUN yum -y install openssl openssl-devel
+RUN yum -y install gcc
+RUN yum -y install git
+RUN yum -y install less
+RUN yum -y install wget
+RUN yum -y install unzip
+#RUN yum –y install openssh-server openssh-clients
 
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
