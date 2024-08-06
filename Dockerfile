@@ -1,30 +1,17 @@
 # Container image that runs your code
-FROM python:3.10-slim-bullseye
+FROM public.ecr.aws/lambda/python:3.10-x86_64
 
-RUN apt update
-RUN apt-get update \
-    && apt-get install -y curl jq
-RUN apt install bash
-RUN apt-get -y install findutils
-# RUN apk add --no-cache gcc musl-dev
-# RUN apk add --no-cache acf-openssl
-RUN apt install openssl
-RUN apt install unzip
-RUN apt-get install -y wget
+RUN apk add --update --no-cache curl jq
+RUN apk add --no-cache bash
+RUN apk add --no-cache gcc musl-dev
+RUN apk add --no-cache findutils
+RUN apk add --no-cache acf-openssl
+RUN apk --update add git less openssh && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm /var/cache/apk/*
 
-#RUN apk --update add git less openssh && \
-#    rm -rf /var/lib/apt/lists/* && \
-#    rm /var/cache/apk/*0
-
-RUN apt-get update \
-    && apt-get clean \
-    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-    && unzip awscliv2.zip \
-    && ./aws/install \
-    && rm -rf \
-        awscliv2.zip
-
-COPY --from=golang:1.22.5-bullseye /usr/local/go/ /usr/local/go/
+RUN pip install awscli
+COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
 
 RUN wget https://releases.hashicorp.com/terraform/1.9.3/terraform_1.9.3_linux_amd64.zip
 RUN unzip terraform_1.9.3_linux_amd64.zip && rm terraform_1.9.3_linux_amd64.zip
