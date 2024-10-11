@@ -24,7 +24,7 @@ RUN bash nodesource_setup.sh
 #RUN dnf –y install openssh-server openssh-clients
 
 RUN dnf -y install nodejs
-
+RUN npm install -g cypress
 
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
@@ -32,6 +32,7 @@ COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
 RUN wget https://releases.hashicorp.com/terraform/1.9.3/terraform_1.9.3_linux_amd64.zip
 RUN unzip terraform_1.9.3_linux_amd64.zip && rm terraform_1.9.3_linux_amd64.zip
 RUN mv terraform /usr/bin/terraform
+
 
 # Copies your code file from your action repository to the filesystem path `/` of the container
 ADD entrypoint.sh /entrypoint.sh
