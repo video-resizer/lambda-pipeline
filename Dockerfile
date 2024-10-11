@@ -13,7 +13,14 @@ RUN yum -y install git
 RUN yum -y install less
 RUN yum -y install wget
 RUN yum -y install unzip
+RUN yum -y install tar
+RUN yum -y install make
+RUN yum -y install bison
+RUN yum install nodejs npm --enablerepo=epel
 #RUN yum –y install openssh-server openssh-clients
+
+RUN wget https://ftp.gnu.org/gnu/libc/glibc-2.28.tar.gz
+RUN tar -xzf glibc-2.28.tar.gz && cd glibc-2.28 && mkdir build && pushd build && ../configure --prefix=/usr && make && make check && make install && popd && popd
 
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
