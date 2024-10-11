@@ -1,26 +1,30 @@
 # Container image that runs your code
-FROM public.ecr.aws/lambda/python:3.10-x86_64
+FROM public.ecr.aws/lambda/python:3.12-x86_64
 
-RUN yum makecache
-RUN yum -y install jq
-RUN yum -y install curl
+RUN dnf makecache
+RUN dnf -y install jq
+# Curl is already installed on Amazon Linux 2023
+#RUN dnf -y install curl
 
-#RUN yum -y group install "Development Tools"
-RUN yum install findutils
-RUN yum -y install openssl openssl-devel
-RUN yum -y install gcc
-RUN yum -y install git
-RUN yum -y install less
-RUN yum -y install wget
-RUN yum -y install unzip
-RUN yum -y install tar
-RUN yum -y install make
-RUN yum -y install bison
-RUN yum -y install nodejs
-#RUN yum –y install openssh-server openssh-clients
+# Amazon Linux 2023 uses microdnf which doesn't support group install
+#RUN dnf group install "Development Tools"
+RUN dnf -y install findutils
+RUN dnf -y install openssl openssl-devel
+RUN dnf -y install gcc
+RUN dnf -y install gcc-c++
+RUN dnf -y install git
+RUN dnf -y install less
+RUN dnf -y install wget
+RUN dnf -y install unzip
+RUN dnf -y install tar
+RUN dnf -y install make
+RUN dnf -y install bison
+RUN curl -fsSL https://rpm.nodesource.com/setup_22.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+#RUN dnf –y install openssh-server openssh-clients
 
-RUN wget https://ftp.gnu.org/gnu/libc/glibc-2.28.tar.gz
-RUN tar -xzf glibc-2.28.tar.gz && cd glibc-2.28 && mkdir build && pushd build && ../configure --prefix=/usr && make && make check && make install && popd && popd
+RUN dnf -y install nodejs
+
 
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
