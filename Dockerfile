@@ -16,7 +16,7 @@ RUN yum -y install unzip
 RUN yum -y install tar
 RUN yum -y install make
 RUN yum -y install bison
-RUN yum install nodejs npm --enablerepo=epel
+RUN yum -y install nodejs
 #RUN yum –y install openssh-server openssh-clients
 
 RUN wget https://ftp.gnu.org/gnu/libc/glibc-2.28.tar.gz
