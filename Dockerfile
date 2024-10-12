@@ -22,9 +22,8 @@ RUN dnf -y install bison
 RUN curl -fsSL https://rpm.nodesource.com/setup_22.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh
 #RUN dnf –y install openssh-server openssh-clients
-
+RUN dnf install -y xorg-x11-server-Xvfb gtk3-devel nss alsa-lib
 RUN dnf -y install nodejs
-RUN npm install -g cypress
 
 RUN pip install awscli
 COPY --from=golang:1.22.5-alpine3.20 /usr/local/go/ /usr/local/go/
